@@ -1,17 +1,50 @@
-"""
-This module is an example of a barebones numpy reader plugin for napari.
-
-It implements the ``napari_get_reader`` hook specification, (to create
-a reader plugin) but your plugin may choose to implement any of the hook
-specifications offered by napari.
-see: https://napari.org/docs/dev/plugins/hook_specifications.html
-
-Replace code below accordingly.  For complete documentation see:
-https://napari.org/docs/dev/plugins/for_plugin_developers.html
-"""
 import numpy as np
+import pandas as pd
 from napari_plugin_engine import napari_hook_implementation
 
+
+class CSVIO:
+    """Read data from csv file
+
+    Parameters
+    ----------
+    file_path : str
+        Path to the csv file
+
+    """
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def is_compatible(self):
+        if self.file_path.endswith('.csv'):
+            return True
+        return False
+
+    def read(self):
+        df = pd.read_csv(self.file_path)
+        df = df.fillna('None')
+        #df_gene = df[df['target'] != np.nan]
+        #self.data = np.column_stack([df_gene['yc'], df_gene['xc']])
+        self.total_data = (np.column_stack([df['yc'], df['xc']]), df['target'])
+
+def is_compatible(file_path):
+    # CSV
+    csv_reader = CSVIO(file_path)
+    if csv_reader.is_compatible():
+        return True
+
+    return None
+
+
+def read_spots(file_path):
+    print("read spots:", file_path)
+    # CSV
+    csv_reader = CSVIO(file_path)
+    if csv_reader.is_compatible():
+        csv_reader.read()
+        return csv_reader.total_data
+
+    return None
 
 @napari_hook_implementation
 def napari_get_reader(path):
@@ -28,6 +61,15 @@ def napari_get_reader(path):
         If the path is a recognized format, return a function that accepts the
         same path or list of paths, and returns a list of layer data tuples.
     """
+    #if isinstance(path, list):
+        # reader plugins may be handed single path, or a list of paths.
+        # if it is a list, it is assumed to be an image stack...
+        # so we are only going to look at the first file.
+        #path = path[0]
+
+    # if we know we cannot read the file, we immediately return None.
+    #if not path.endswith(".csv"):
+        #return None
     if isinstance(path, list):
         # reader plugins may be handed single path, or a list of paths.
         # if it is a list, it is assumed to be an image stack...
@@ -35,7 +77,7 @@ def napari_get_reader(path):
         path = path[0]
 
     # if we know we cannot read the file, we immediately return None.
-    if not path.endswith(".npy"):
+    if not is_compatible(path):
         return None
 
     # otherwise we return the *function* that can read ``path``.
@@ -65,14 +107,32 @@ def reader_function(path):
         layer_type=="image" if not provided
     """
     # handle both a string and a list of strings
-    paths = [path] if isinstance(path, str) else path
+    #paths = [path] if isinstance(path, str) else path
     # load all files into array
-    arrays = [np.load(_path) for _path in paths]
+    #arrays = [np.load(_path) for _path in paths]
     # stack arrays into single array
-    data = np.squeeze(np.stack(arrays))
+    #data = np.squeeze(np.stack(arrays))
 
     # optional kwargs for the corresponding viewer.add_* method
-    add_kwargs = {}
+    if isinstance(path, list):
+        path = path[0]
 
-    layer_type = "image"  # optional, default is "image"
-    return [(data, add_kwargs, layer_type)]
+    data_frame1, data_frame2 = read_spots(path)
+
+    spots = data_frame1
+
+    add_kwargs = {
+        'properties': {'gene': data_frame2}
+    }  # optional kwargs for the corresponding viewer.add_* method
+
+    layer_type = "points"  # optional, default is "image"
+
+    layer_data = (
+        spots,
+        add_kwargs,
+        layer_type
+    )
+    #return [(np.array(spot_coordinates), add_kwargs, layer_type)]
+
+    return [layer_data]
+
