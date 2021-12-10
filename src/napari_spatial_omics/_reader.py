@@ -1,50 +1,19 @@
+"""
+This module is an example of a barebones numpy reader plugin for napari.
+
+It implements the ``napari_get_reader`` hook specification, (to create
+a reader plugin) but your plugin may choose to implement any of the hook
+specifications offered by napari.
+see: https://napari.org/docs/dev/plugins/hook_specifications.html
+
+Replace code below accordingly.  For complete documentation see:
+https://napari.org/docs/dev/plugins/for_plugin_developers.html
+"""
 import numpy as np
-import pandas as pd
+import os
+from ._reader_function import is_compatible, read_spots
 from napari_plugin_engine import napari_hook_implementation
 
-
-class CSVIO:
-    """Read data from csv file
-
-    Parameters
-    ----------
-    file_path : str
-        Path to the csv file
-
-    """
-    def __init__(self, file_path):
-        self.file_path = file_path
-
-    def is_compatible(self):
-        if self.file_path.endswith('.csv'):
-            return True
-        return False
-
-    def read(self):
-        df = pd.read_csv(self.file_path)
-        df = df.fillna('None')
-        #df_gene = df[df['target'] != np.nan]
-        #self.data = np.column_stack([df_gene['yc'], df_gene['xc']])
-        self.total_data = (np.column_stack([df['yc'], df['xc']]), df['target'])
-
-def is_compatible(file_path):
-    # CSV
-    csv_reader = CSVIO(file_path)
-    if csv_reader.is_compatible():
-        return True
-
-    return None
-
-
-def read_spots(file_path):
-    print("read spots:", file_path)
-    # CSV
-    csv_reader = CSVIO(file_path)
-    if csv_reader.is_compatible():
-        csv_reader.read()
-        return csv_reader.total_data
-
-    return None
 
 @napari_hook_implementation
 def napari_get_reader(path):
@@ -134,5 +103,4 @@ def reader_function(path):
     )
     #return [(np.array(spot_coordinates), add_kwargs, layer_type)]
 
-    return layer_data
-
+    return [layer_data]
