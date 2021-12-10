@@ -134,5 +134,5 @@ def reader_function(path):
     )
     #return [(np.array(spot_coordinates), add_kwargs, layer_type)]
 
-    return [layer_data]
+    return layer_data
 

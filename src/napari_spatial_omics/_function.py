@@ -71,7 +71,7 @@ def read_spots(
         layer_type
     )
 
-    return [layer_data]
+    return layer_data
 
 
 
