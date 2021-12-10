@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 #from enum import Enum
 import numpy as np
+from napari.layers import Points
 from napari_plugin_engine import napari_hook_implementation
 if TYPE_CHECKING:
     import napari
@@ -20,7 +21,7 @@ def read_spots(
         genes: str = 'IGHG1',
         color_s: str = 'white',
         size_s: str = '10'
-) -> "napari.types.LayerDataTuple":
+) -> Points:
     """Retrieve points' data from selected group of genes.
 
     Parameters
@@ -37,41 +38,41 @@ def read_spots(
         points and metadata for visualization.
     """
     genes_list = genes.split(',')
-    genes_dict_cmap = {g: i for i, g in enumerate(genes_list)}
+    #genes_dict_cmap = {g: i for i, g in enumerate(genes_list)}
 
-    color_cycle = color_s.split(',')
-    size_cycle = [int(i) for i in size_s.split(',')]
+    #color_cycle = color_s.split(',')
+    #size_cycle = [int(i) for i in size_s.split(',')]
 
-    spots_idx = [genes_dict_cmap[g] for g in points.properties['gene'] if g in genes_list]
+    #spots_idx = [genes_dict_cmap[g] for g in points.properties['gene'] if g in genes_list]
     # spots_idx = [genes_dict_cmap[gene] for gene in points.properties['gene']]
-    # selected_points = [points.data[i] for i in range(len(points.data)) if points.properties['gene'][i] in genes_list]
+    selected_points = [points.data[i] for i in range(len(points.data)) if points.properties['gene'][i] in genes_list]
 
     # List with indices of selected genes by user.
-    selected_points_idx = [i for i in range(len(points.data)) if points.properties['gene'][i] in genes_list]
+    #selected_points_idx = [i for i in range(len(points.data)) if points.properties['gene'][i] in genes_list]
 
     # Here we select the data coordinates and labels/index of requested genes:
-    selected_data = [points.data[i] for i in selected_points_idx]
-    selected_idx = spots_idx#[spots_idx[i] for i in selected_points_idx]
+    #selected_data = [points.data[i] for i in selected_points_idx]
+    #selected_idx = spots_idx#[spots_idx[i] for i in selected_points_idx]
 
-    spot_properties = {'label': selected_idx}
+    #spot_properties = {'label': selected_idx}
 
-    face_color = {
-        'colors': 'label',
-        'color_mode': 'cycle',
-        'categorical_colormap': color_cycle
-    }
-    layer_type = "points"
-    layer_data = (
-        selected_data,
+    #face_color = {
+    #    'colors': 'label',
+    #    'color_mode': 'cycle',
+    #    'categorical_colormap': color_cycle
+    #}
+    #layer_type = "points"
+    #layer_data = (
+    #    selected_data,
         #{'face_color': 'magenta',
         # 'symbol': 'ring'},
-        {'properties': spot_properties,
-         'size': size_cycle,
-         'face_color': face_color},
-        layer_type
-    )
+    #    {'properties': spot_properties,
+    #     'size': size_cycle,
+    #     'face_color': face_color},
+    #    layer_type
+    #)
 
-    return layer_data
+    return Points(selected_points, color=color_s, size=size_s)
 
 
 
