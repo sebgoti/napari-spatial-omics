@@ -19,9 +19,9 @@ def napari_experimental_provide_function():
 def read_spots(
         points: "napari.layers.Points",
         gene: str = 'IGHG1',
-        gene_color: str = 'red',
+        gene_colorsss: str = 'red',
         marker_size: str = '10'
-) -> "napari.types.LayerDataTuple":
+) -> "napari.layers.Points":#"napari.types.LayerDataTuple":
     """Retrieve points' data from selected group of genes.
 
     Parameters
@@ -77,8 +77,8 @@ def read_spots(
     #    layer_type
     #)
 
-    return (selected_points, {'face_color': gene_color_prop, 'size': marker_size_prop}, 'points')
-
-
+    #return (selected_points, {'face_color': gene_color_prop, 'size': marker_size_prop}, 'points')
+    #return (np.random.rand(1200, 1200),)
+    return Points(selected_points, size=int(marker_size), face_color=gene_colorsss)
 
 
