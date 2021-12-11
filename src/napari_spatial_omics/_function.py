@@ -18,18 +18,22 @@ def napari_experimental_provide_function():
 
 def read_spots(
         points: "napari.layers.Points",
-        genes: str = 'IGHG1',
-        color_s: str = 'white',
-        size_s: str = '10'
-) -> Points:
+        gene: str = 'IGHG1',
+        gene_color: str = 'red',
+        marker_size: str = '10'
+) -> "napari.types.LayerDataTuple":
     """Retrieve points' data from selected group of genes.
 
     Parameters
     ----------
     points: napari.types.PointsData
         The raw data from a decoded CSV file
-    genes: list
-        list with genes to visualize.
+    gene: str
+        string of gene to visualize.
+    gene_color: str
+        color to display points in layer
+    marker_size: str
+        size of points
 
     Returns
     -------
@@ -37,7 +41,7 @@ def read_spots(
         The layer data tuple containing the corresponding
         points and metadata for visualization.
     """
-    genes_list = genes.split(',')
+    #genes_list = genes.split(',')
     #genes_dict_cmap = {g: i for i, g in enumerate(genes_list)}
 
     #color_cycle = color_s.split(',')
@@ -45,7 +49,7 @@ def read_spots(
 
     #spots_idx = [genes_dict_cmap[g] for g in points.properties['gene'] if g in genes_list]
     # spots_idx = [genes_dict_cmap[gene] for gene in points.properties['gene']]
-    selected_points = [points.data[i] for i in range(len(points.data)) if points.properties['gene'][i] in genes_list]
+    selected_points = [points.data[i].tolist() for i in range(len(points.data)) if points.properties['gene'][i] == gene]
 
     # List with indices of selected genes by user.
     #selected_points_idx = [i for i in range(len(points.data)) if points.properties['gene'][i] in genes_list]
@@ -55,7 +59,8 @@ def read_spots(
     #selected_idx = spots_idx#[spots_idx[i] for i in selected_points_idx]
 
     #spot_properties = {'label': selected_idx}
-
+    gene_color_prop = [gene_color for i in range(len(selected_points))]
+    marker_size_prop = [int(marker_size) for k in range(len(selected_points))]
     #face_color = {
     #    'colors': 'label',
     #    'color_mode': 'cycle',
@@ -72,7 +77,7 @@ def read_spots(
     #    layer_type
     #)
 
-    return Points(selected_points, color=color_s, size=size_s)
+    return (selected_points, {'face_color': gene_color_prop, 'size': marker_size_prop}, 'points')
 
 
 
